@@ -21,7 +21,8 @@ import { updateProjectThumbnail } from "./controllers/scratch";
 // const __dirname = path.dirname(__filename);
 const app: Application = express();
 const assetsUrl = path.join(__dirname, "../public/assets")
-const thumbnailUrl = path.join(__dirname, "../public/thumbnail")
+const thumbnailUrl = path.join(__dirname, "../public/assets/scratch/thumbnail")
+const scratchAssets = path.join(__dirname, "../public/assets/scratch/assets")
 var allowlist = ['http://127.0.0.1:8602', 'http://localhost:8602', 'http://localhost:3000']
 var corsOptionsDelegate = function (req: any, callback: any) {
   var corsOptions = { origin: false, credentials: true };
@@ -42,7 +43,8 @@ app.use(bodyParser.json({ limit: "30mb" }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 app.use(cors(corsOptionsDelegate));
 app.use("/assets", express.static(assetsUrl));
-app.use("/thumbnail", express.static(thumbnailUrl));
+app.use("/scratch/thumbnail", express.static(thumbnailUrl));
+app.use("/scratch/assets", express.static(scratchAssets));
 
 
 /* FILE STORAGE */
