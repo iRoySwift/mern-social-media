@@ -1,11 +1,19 @@
-import express, { Router } from "express"
-import { createProject, getProject, updateProject, updateProjectThumbnail } from "./../controllers/scratch"
-const router: Router = express.Router()
+import express, { Router } from "express";
+import {
+  createProject,
+  getAssets,
+  getProject,
+  updateProject,
+  updateProjectThumbnail,
+  createAssets,
+} from "./../controllers/scratch";
+const router: Router = express.Router();
 
-router.get("/:projectId", getProject)
-router.post("/create", createProject)
-router.put("/update/:projectId", updateProject)
+router.get("/:projectId", getProject);
+router.post("/create", createProject);
+router.put("/update/:projectId", updateProject);
 // router.post("/thumbnail/:projectId", updateProjectThumbnail)
-
+router.get("/assets/:filename", getAssets);
+router.post("/assets/:filename", createAssets);
 
 export default router;

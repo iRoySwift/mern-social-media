@@ -9,7 +9,7 @@ import path from "path";
 import authRoutes from "./routes/auth";
 import userRoutes from "./routes/users";
 import postRoutes from "./routes/posts";
-import scratchRoutes from "./routes/scratch"
+import scratchRoutes from "./routes/scratch";
 import { register } from "./controllers/auth";
 import { createPost } from "./controllers/posts";
 import { verifyToken } from "./middleware/auth";
@@ -20,19 +20,23 @@ import { updateProjectThumbnail } from "./controllers/scratch";
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
 const app: Application = express();
-const assetsUrl = path.join(__dirname, "../public/assets")
-const thumbnailUrl = path.join(__dirname, "../public/assets/scratch/thumbnail")
-const scratchAssets = path.join(__dirname, "../public/assets/scratch/assets")
-var allowlist = ['http://127.0.0.1:8602', 'http://localhost:8602', 'http://localhost:3000']
+const assetsUrl = path.join(__dirname, "../public/assets");
+const thumbnailUrl = path.join(__dirname, "../public/assets/scratch/thumbnail");
+const scratchAssets = path.join(__dirname, "../public/assets/scratch/assets");
+var allowlist = [
+  "http://127.0.0.1:8602",
+  "http://localhost:8602",
+  "http://localhost:3000",
+];
 var corsOptionsDelegate = function (req: any, callback: any) {
   var corsOptions = { origin: false, credentials: true };
-  if (allowlist.includes(req.header('Origin'))) {
-    corsOptions = { origin: true, credentials: true } // reflect (enable) the requested origin in the CORS response
+  if (allowlist.includes(req.header("Origin"))) {
+    corsOptions = { origin: true, credentials: true }; // reflect (enable) the requested origin in the CORS response
   } else {
-    corsOptions = { origin: false, credentials: true } // disable CORS for this request
+    corsOptions = { origin: false, credentials: true }; // disable CORS for this request
   }
-  callback(null, corsOptions)
-}
+  callback(null, corsOptions);
+};
 
 /* MIDDLEWARE */
 app.use(express.json());
@@ -44,8 +48,6 @@ app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 app.use(cors(corsOptionsDelegate));
 app.use("/assets", express.static(assetsUrl));
 app.use("/scratch/thumbnail", express.static(thumbnailUrl));
-app.use("/scratch/assets", express.static(scratchAssets));
-
 
 /* FILE STORAGE */
 const storage = multer.diskStorage({
@@ -58,7 +60,9 @@ const storage = multer.diskStorage({
     }
   },
   filename: function (req, file, cb) {
-    const filename = req.params.projectId ? `${req.params.projectId}.png` : file.originalname;
+    const filename = req.params.projectId
+      ? `${req.params.projectId}.png`
+      : file.originalname;
     cb(null, filename);
   },
 });
@@ -67,22 +71,24 @@ export const upload = multer({ storage });
 /* ROUTES WITH FILES */
 app.post("/auth/register", upload.single("picture"), register);
 app.post("/posts", verifyToken, upload.single("picture"), createPost);
-app.post("/scratch/thumbnail/:projectId", upload.single("thumbnail"), updateProjectThumbnail);
-
+app.post(
+  "/scratch/thumbnail/:projectId",
+  upload.single("thumbnail"),
+  updateProjectThumbnail
+);
 
 /* ROUTES */
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/posts", postRoutes);
-app.use("/scratch", scratchRoutes)
-
+app.use("/scratch", scratchRoutes);
 
 /* -------------------------------------------------------------------------- */
 
 app.get("/no-cors", (req, res) => {
   console.info("GET /no-cors");
   res.json({
-    text: "You should not see this via a CORS request."
+    text: "You should not see this via a CORS request.",
   });
 });
 
@@ -95,13 +101,13 @@ app.head("/simple-cors", cors(), (req, res) => {
 app.get("/simple-cors", cors(), (req, res) => {
   console.info("GET /simple-cors");
   res.json({
-    text: "Simple CORS requests are working. [GET]"
+    text: "Simple CORS requests are working. [GET]",
   });
 });
 app.post("/simple-cors", cors(), (req, res) => {
   console.info("POST /simple-cors");
   res.json({
-    text: "Simple CORS requests are working. [POST]"
+    text: "Simple CORS requests are working. [POST]",
   });
 });
 
@@ -111,7 +117,7 @@ app.options("/complex-cors", cors());
 app.delete("/complex-cors", cors(), (req, res) => {
   console.info("DELETE /complex-cors");
   res.json({
-    text: "Complex CORS requests are working. [DELETE]"
+    text: "Complex CORS requests are working. [DELETE]",
   });
 });
 
