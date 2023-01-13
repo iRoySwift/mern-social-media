@@ -1,6 +1,9 @@
 import { Document, Schema, model } from "mongoose";
 
 export interface IScratch extends Document {
+  title: string;
+  intro: string;
+  desc: string;
   targets: any[]
   monitors: any[]
   extensions: any[]
@@ -8,6 +11,18 @@ export interface IScratch extends Document {
 }
 
 const ScratchSchema = new Schema({
+  title: {
+    type: String,
+    default: '',
+  },
+  intro: {
+    type: String,
+    default: '',
+  },
+  desc: {
+    type: String,
+    default: '',
+  },
   targets: {
     type: Array,
     default: []

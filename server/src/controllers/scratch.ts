@@ -27,6 +27,19 @@ export const getAssets = async (req: Request, res: Response) => {
   }
 };
 
+export const getThumbnail = async (req: Request, res: Response) => {
+  try {
+    const scratchAssets = path.join(
+      __dirname,
+      "../../public/assets/scratch/assets/thumbnail",
+      req.params.filename
+    );
+    res.sendFile(scratchAssets);
+  } catch (error: any) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
 /* UPDATE */
 export const createProject = async (req: Request, res: Response) => {
   try {
@@ -94,6 +107,52 @@ export const updateProjectThumbnail = (req: Request, res: Response) => {
   // });
   res.status(201).json("ok");
 };
+
+export const updateTitle = async (req: Request, res: Response) => {
+  try {
+    const { projectId, title } = req.body;
+    if (!projectId || !title) {
+      res
+        .status(404)
+        .json("projectId, title 字段为空");
+      return;
+    }
+    const newScratch: IScratch | null = await Scratch.findById(projectId);
+    newScratch!.title = title;
+    if (!newScratch) {
+      res.status(404).json(`project:${projectId}, 未查到数据`);
+      return;
+    }
+    const saveScratch = await newScratch!.save();
+    res.status(200).json(saveScratch);
+  } catch (error: any) {
+    res.status(404).json({ message: error.message });
+  }
+}
+
+export const updateInfo = async (req: Request, res: Response) => {
+  try {
+    const { projectId, title, intro, desc } = req.body;
+    if (!projectId || !title || !intro || !desc) {
+      res
+        .status(404)
+        .json("projectId, title, intro, desc 字段为空");
+      return;
+    }
+    const newScratch: IScratch | null = await Scratch.findById(projectId);
+    newScratch!.title = title;
+    newScratch!.intro = intro;
+    newScratch!.desc = desc;
+    if (!newScratch) {
+      res.status(404).json(`project:${projectId}, 未查到数据`);
+      return;
+    }
+    const saveScratch = await newScratch!.save();
+    res.status(200).json(saveScratch);
+  } catch (error: any) {
+    res.status(404).json({ message: error.message });
+  }
+}
 
 export const createAssets = (req: Request, res: Response) => {
   const scratchAssets = path.join(
