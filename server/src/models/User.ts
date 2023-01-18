@@ -13,6 +13,8 @@ export interface IUser extends Document {
   occupation: string;
   viewedProfile: number;
   impressions: number;
+  isTeacher: boolean;
+  role: string;
   encryptPassword: (password: string) => Promise<string>;
   validatePassword: (password: string) => Promise<boolean>;
 }
@@ -50,6 +52,8 @@ const UserSchema = new Schema(
       type: Array,
       default: [],
     },
+    isTeacher: Boolean,
+    role: String,
     location: String,
     occupation: String,
     viewedProfile: Number,
