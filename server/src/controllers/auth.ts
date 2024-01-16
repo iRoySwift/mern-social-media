@@ -7,69 +7,37 @@ const JWT_SECRET = process.env.JWT_SECRET || "";
 /* REGISTER USER */
 export const register = async (req: Request, res: Response) => {
   try {
-    const {
-      firstName,
-      lastName,
-      email,
-      password,
-      picturePath,
-      friends,
-      location,
-      occupation,
-      isTeacher,
-      role,
-    } = req.body;
+    const { mobile, password } = req.body;
+    if (!mobile || !password) return res.status(400).json({ message: " " });
+
     const newUser: IUser = new User({
-      firstName,
-      lastName,
-      email,
-      password,
-      picturePath,
-      friends,
-      location,
-      occupation,
-      isTeacher,
-      role,
-      viewedProfile: Math.floor(Math.random() * 10000),
-      impressions: Math.floor(Math.random() * 10000),
+      mobile,
+      password
     });
     newUser.password = await newUser.encryptPassword(password);
     const savedUser = await newUser.save();
     res.status(201).json(savedUser);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    res.status(500).send(error.message);
   }
 };
 
 /* LOGING IN */
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ msg: "User does not exist. " });
+    const { mobile, password } = req.body;
+    if (!mobile || !password) return res.status(400).json({ message: "mobile password does not empty. " });
+    let user = await User.findOne({ mobile });
+    if (!user) return res.status(203).json({ message: "User does not exist. " });
 
     const isMatch = await user.validatePassword(password);
-    if (!isMatch) return res.status(400).json({ msg: "Invalid credentials. " });
+    if (!isMatch) return res.status(203).json({ message: "Invalid credentials. " });
 
     const token = jwt.sign({ id: user._id }, JWT_SECRET, {
-      expiresIn: 60 * 60 * 24,
+      expiresIn: 60 * 60 * 24
     });
-    delete user!.password;
-    res
-      .header("Authorization", `Bearer ${token}`)
-      .status(200)
-      .json({ token, user });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-export const getUser = async (req: Request, res: Response) => {
-  try {
-    const { email } = req.params;
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ msg: "User does not exist. " });
-    res.status(200).json({ user });
+    delete user.password;
+    res.header("Authorization", `Bearer ${token}`).status(200).json({ accessToken: token, userInfo: user });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

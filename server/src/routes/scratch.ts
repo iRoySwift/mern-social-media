@@ -1,23 +1,14 @@
 import express, { Router } from "express";
-import {
-  createProject,
-  getAssets,
-  getProject,
-  getSb3Project,
-  updateProject,
-  getThumbnail,
-  createAssets,
-  updateInfo,
-} from "./../controllers/scratch";
+import { verifyToken } from "../middleware/auth";
+import { createProject, getAssets, getProject, getThumbnail, createAssets, updateInfo } from "./../controllers/scratch";
+
 const router: Router = express.Router();
 
-router.get("/get/:projectId", getProject);
-router.get("/get/:projectId", getSb3Project);
-router.get("/thumbnail/:projectId", getThumbnail);
-router.get("/assets/:filename", getAssets);
-router.post("/assets/:filename", createAssets);
-router.post("/create", createProject);
-router.patch("/data/:projectId", updateProject);
-router.patch("/base/:projectId", updateInfo);
+router.get("/get/:projectId", verifyToken, getProject);
+router.get("/thumbnail/:projectId", verifyToken, getThumbnail);
+router.get("/assets/:filename", verifyToken, getAssets);
+router.post("/assets/:filename", verifyToken, createAssets);
+router.post("/create", verifyToken, createProject);
+router.patch("/base/:projectId", verifyToken, updateInfo);
 
 export default router;

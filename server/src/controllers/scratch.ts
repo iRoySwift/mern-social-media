@@ -2,26 +2,14 @@ import path from "path";
 import fs from "fs";
 import { Request, Response } from "express";
 import Scratch, { IScratch } from "./../models/Scratch";
+import { sb3ProjectTemplatePath, sb3ProjectPath, thumbnailPath, scratchAssetsPath } from "./../app";
+import { copyRename } from "./../utils/index";
 
 /* READ */
 export const getProject = async (req: Request, res: Response) => {
   try {
-    const { projectId } = req.params;
-    const scratch = await Scratch.findById(projectId);
-    res.status(200).json(scratch);
-  } catch (error: any) {
-    res.status(404).json({ message: error.message });
-  }
-};
-
-export const getSb3Project = async (req: Request, res: Response) => {
-  try {
-    const scratchAssets = path.join(
-      __dirname,
-      "../../public/assets/scratch/sb3",
-      req.params.filename
-    );
-    res.sendFile(scratchAssets);
+    const scratchSb3 = path.join(sb3ProjectPath, `${req.params.projectId}.sb3`);
+    res.sendFile(scratchSb3);
   } catch (error: any) {
     res.status(404).json({ message: error.message });
   }
@@ -29,11 +17,8 @@ export const getSb3Project = async (req: Request, res: Response) => {
 
 export const getAssets = async (req: Request, res: Response) => {
   try {
-    const scratchAssets = path.join(
-      __dirname,
-      "../../public/assets/scratch/assets",
-      req.params.filename
-    );
+    const scratchAssets = path.join(scratchAssetsPath, req.params.filename);
+    console.log("🚀 ~ file: scratch.ts:21 ~ getAssets ~ req.params.filename:", req.params.filename);
     res.sendFile(scratchAssets);
   } catch (error: any) {
     res.status(404).json({ message: error.message });
@@ -42,52 +27,68 @@ export const getAssets = async (req: Request, res: Response) => {
 
 export const getThumbnail = async (req: Request, res: Response) => {
   try {
-    const scratchAssets = path.join(
-      __dirname,
-      "../../public/assets/scratch/assets/thumbnail",
-      req.params.filename
-    );
+    const scratchAssets = path.join(thumbnailPath, req.params.filename);
     res.sendFile(scratchAssets);
   } catch (error: any) {
     res.status(404).json({ message: error.message });
   }
 };
 
-/* UPDATE */
+/**
+ * *创建项目
+ * @param req
+ * @param res
+ */
 export const createProject = async (req: Request, res: Response) => {
   try {
     const newScratch: IScratch = new Scratch({
       ...req.params,
-      ...req.body,
+      ...req.body
     });
-    const saveScratch = await newScratch.save();
+    let saveScratch = await newScratch.save();
+    // 拷贝空项目
+    copyRename(sb3ProjectTemplatePath, `${sb3ProjectPath}/${saveScratch._id}.sb3`);
+    newScratch.sb3ProjectPath = `${sb3ProjectPath}/${saveScratch._id}.sb3`;
+    saveScratch = await newScratch.save();
     res.status(201).json(saveScratch);
   } catch (error: any) {
     res.status(404).json({ message: error.message });
   }
 };
 
+// export const updateProject = async (req: Request, res: Response) => {
+//   try {
+//     const { projectId } = req.params;
+//     const { extensions, meta, monitors, targets } = req.body;
+//     if (!projectId || !extensions || !meta || !monitors || !targets) {
+//       res.status(400).json("projectId, extensions, meta, monitors, targets 字段为空");
+//       return;
+//     }
+//     const newScratch: IScratch | null = await Scratch.findById(projectId);
+//     newScratch!.extensions = extensions;
+//     newScratch!.meta = meta;
+//     newScratch!.monitors = monitors;
+//     newScratch!.targets = targets;
+//     if (!newScratch) {
+//       res.status(404).json(`project:${projectId}, 未查到数据`);
+//       return;
+//     }
+//     const saveScratch = await newScratch!.save();
+//     res.status(200).json(saveScratch);
+//   } catch (error: any) {
+//     res.status(404).json({ message: error.message });
+//   }
+// };
+
 export const updateProject = async (req: Request, res: Response) => {
   try {
     const { projectId } = req.params;
-    const { extensions, meta, monitors, targets } = req.body;
-    if (!projectId || !extensions || !meta || !monitors || !targets) {
-      res
-        .status(404)
-        .json("projectId, extensions, meta, monitors, targets 字段为空");
+    if (!projectId) {
+      res.status(404).json("projectId,  字段为空");
       return;
     }
     const newScratch: IScratch | null = await Scratch.findById(projectId);
-    newScratch!.extensions = extensions;
-    newScratch!.meta = meta;
-    newScratch!.monitors = monitors;
-    newScratch!.targets = targets;
-    if (!newScratch) {
-      res.status(404).json(`project:${projectId}, 未查到数据`);
-      return;
-    }
-    const saveScratch = await newScratch!.save();
-    res.status(200).json(saveScratch);
+    res.status(201).json(newScratch);
   } catch (error: any) {
     res.status(404).json({ message: error.message });
   }
@@ -117,7 +118,7 @@ export const updateProjectThumbnail = (req: Request, res: Response) => {
   //     }
   //   });
   // });
-  res.status(201).json("ok");
+  res.status(201).json({ message: "save success!" });
 };
 
 export const updateInfo = async (req: Request, res: Response) => {
@@ -149,11 +150,9 @@ export const updateInfo = async (req: Request, res: Response) => {
 };
 
 export const createAssets = (req: Request, res: Response) => {
-  const scratchAssets = path.join(
-    __dirname,
-    "../../public/assets/scratch/assets",
-    req.params.filename
-  );
+  console.log(req.params);
+
+  const scratchAssets = path.join(__dirname, scratchAssetsPath, req.params.filename);
   if (fs.existsSync(scratchAssets)) {
     res.status(404).send("素材已存在：" + scratchAssets);
   } else {
